@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пошаговая система достижения цели</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f2ec;
+    --accent: #e8c84a;
+    --accent2: #e05a2b;
+    --green: #3dba7e;
+    --blue: #3a7bd5;
+    --muted: #5a5750;
+    --card-bg: #131210;
+    --border: rgba(232,200,74,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 40px 80px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(232,200,74,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 20% 80%, rgba(224,90,43,0.06) 0%, transparent 50%);
+  }
+  .hero-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px; position: relative;
+  }
+  .hero-label::before { content: ''; display: block; width: 32px; height: 2px; background: var(--accent); }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 7vw, 78px);
+    line-height: 0.95; letter-spacing: 0.02em;
+    color: var(--white); margin-bottom: 8px; position: relative;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    font-size: clamp(14px, 2vw, 16px);
+    color: rgba(245,242,236,0.5);
+    max-width: 540px; margin-top: 28px;
+    font-weight: 400; position: relative; line-height: 1.7;
+  }
+  .hero-pills {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 36px; position: relative;
+  }
+  .hero-pill {
+    background: rgba(232,200,74,0.08); border: 1px solid var(--border);
+    border-radius: 2px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; color: rgba(245,242,236,0.7);
+    letter-spacing: 0.05em;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 40px;
+    font-size: 11px; color: var(--muted); letter-spacing: 0.15em;
+    text-transform: uppercase; display: flex; align-items: center; gap: 12px;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scroll-line 1.8s ease-in-out infinite;
+  }
+  @keyframes scroll-line { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+  /* SECTION */
+  section { max-width: 900px; margin: 0 auto; padding: 80px 32px; }
+  .section-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 6vw, 56px); line-height: 1; letter-spacing: 0.03em; color: var(--white); margin-bottom: 32px; }
+  .divider { width: 100%; height: 1px; background: var(--border); }
+  .body-text { color: rgba(245,242,236,0.6); font-size: 14px; max-width: 640px; line-height: 1.7; }
+
+  /* STEPS / ACCORDION */
+  .steps-wrapper { display: flex; flex-direction: column; gap: 2px; }
+  .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.3s; }
+  .step-card:hover { border-color: rgba(232,200,74,0.35); }
+  .step-header { display: flex; align-items: center; gap: 20px; padding: 22px 28px; cursor: pointer; user-select: none; }
+  .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); min-width: 36px; line-height: 1; }
+  .step-title { font-weight: 700; font-size: 15px; flex: 1; letter-spacing: 0.02em; }
+  .step-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; background: rgba(232,200,74,0.1); color: var(--accent); white-space: nowrap; }
+  .step-badge.green { background: rgba(61,186,126,0.1); color: var(--green); }
+  .step-badge.red { background: rgba(224,90,43,0.1); color: var(--accent2); }
+  .step-badge.blue { background: rgba(58,123,213,0.1); color: var(--blue); }
+  .step-arrow { font-size: 18px; color: var(--muted); transition: transform 0.3s; flex-shrink: 0; }
+  .step-card.open .step-arrow { transform: rotate(180deg); }
+  .step-body { display: none; padding: 0 28px 28px; border-top: 1px solid var(--border); }
+  .step-card.open .step-body { display: block; }
+  .step-body-inner { padding-top: 24px; }
+
+  /* INFO GRID */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 20px; }
+  .info-cell { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 4px; padding: 16px 18px; }
+  .info-cell-label { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .info-cell-value { font-size: 13px; color: rgba(245,242,236,0.8); line-height: 1.55; }
+
+  /* RULE LIST */
+  .rule-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .rule-list li { display: flex; gap: 14px; align-items: flex-start; font-size: 14px; color: rgba(245,242,236,0.75); line-height: 1.55; }
+  .rule-list li::before { content: attr(data-icon); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* COMPARE */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  .compare-col { border-radius: 4px; padding: 18px 20px; }
+  .compare-col.bad { background: rgba(224,90,43,0.07); border: 1px solid rgba(224,90,43,0.2); }
+  .compare-col.good { background: rgba(61,186,126,0.07); border: 1px solid rgba(61,186,126,0.2); }
+  .compare-col.neutral { background: rgba(58,123,213,0.06); border: 1px solid rgba(58,123,213,0.18); }
+  .compare-col.yellow { background: rgba(232,200,74,0.05); border: 1px solid rgba(232,200,74,0.2); }
+  .compare-col-title { font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
+  .compare-col.bad .compare-col-title { color: var(--accent2); }
+  .compare-col.good .compare-col-title { color: var(--green); }
+  .compare-col.neutral .compare-col-title { color: var(--blue); }
+  .compare-col.yellow .compare-col-title { color: var(--accent); }
+  .compare-col p { font-size: 13px; color: rgba(245,242,236,0.7); margin-top: 8px; line-height: 1.5; }
+
+  /* HIGHLIGHT */
+  .highlight { background: rgba(232,200,74,0.06); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: 0 4px 4px 0; margin-top: 20px; font-size: 14px; color: rgba(245,242,236,0.8); line-height: 1.65; }
+  .highlight strong { color: var(--accent); }
+  .highlight.green { background: rgba(61,186,126,0.06); border-left-color: var(--green); }
+  .highlight.blue { background: rgba(58,123,213,0.06); border-left-color: var(--blue); }
+  .highlight.red { background: rgba(224,90,43,0.06); border-left-color: var(--accent2); }
+
+  /* REPORT BLOCK */
+  .report-block { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; margin-top: 20px; }
+  .report-item { background: rgba(58,123,213,0.06); border: 1px solid rgba(58,123,213,0.15); border-radius: 4px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .report-icon { font-size: 22px; flex-shrink: 0; }
+  .report-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .report-val { font-size: 12px; color: rgba(245,242,236,0.6); line-height: 1.45; }
+
+  /* WEEK CYCLE */
+  .week-cycle { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin-top: 24px; }
+  .week-day { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 16px 14px; text-align: center; transition: transform 0.2s, border-color 0.2s; }
+  .week-day:hover { transform: translateY(-3px); border-color: rgba(232,200,74,0.35); }
+  .week-day-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .week-day.rest .week-day-name { color: var(--muted); }
+  .week-day-task { font-size: 11px; color: rgba(245,242,236,0.5); line-height: 1.5; }
+
+  /* PSYCH GRID */
+  .psych-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 20px; }
+  .psych-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 22px 22px 20px; position: relative; overflow: hidden; }
+  .psych-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
+  .psych-card.p2::before { background: var(--green); }
+  .psych-card.p3::before { background: var(--blue); }
+  .psych-card.p4::before { background: var(--accent2); }
+  .psych-card-title { font-weight: 800; font-size: 13px; margin-bottom: 10px; }
+  .psych-card p { font-size: 13px; color: rgba(245,242,236,0.6); line-height: 1.6; }
+
+  /* PROGRESS LEVELS */
+  .progress-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+  .level-card { border-radius: 4px; padding: 20px 18px; }
+  .level-card.l1 { background: rgba(61,186,126,0.07); border: 1px solid rgba(61,186,126,0.2); }
+  .level-card.l2 { background: rgba(232,200,74,0.07); border: 1px solid rgba(232,200,74,0.2); }
+  .level-card.l3 { background: rgba(58,123,213,0.07); border: 1px solid rgba(58,123,213,0.2); }
+  .level-num { font-family: 'Bebas Neue', sans-serif; font-size: 40px; line-height: 1; margin-bottom: 8px; }
+  .level-card.l1 .level-num { color: var(--green); }
+  .level-card.l2 .level-num { color: var(--accent); }
+  .level-card.l3 .level-num { color: var(--blue); }
+  .level-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .level-desc { font-size: 12px; color: rgba(245,242,236,0.55); line-height: 1.5; }
+
+  /* ANKETA */
+  .anketa-bio { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .anketa-bio-field { background: rgba(232,200,74,0.06); border: 1px solid var(--border); border-radius: 4px; padding: 14px 20px; flex: 1; min-width: 100px; }
+  .anketa-bio-label { font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .anketa-bio-val { font-size: 13px; color: rgba(245,242,236,0.4); }
+  .anketa-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .anketa-item { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; padding: 18px 22px; display: flex; gap: 18px; align-items: flex-start; transition: border-color 0.2s; }
+  .anketa-item:hover { border-color: rgba(232,200,74,0.2); }
+  .anketa-num { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: rgba(232,200,74,0.35); min-width: 32px; line-height: 1; padding-top: 2px; flex-shrink: 0; }
+  .anketa-q { font-weight: 700; font-size: 14px; color: var(--white); margin-bottom: 5px; }
+  .anketa-hint { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* PRINCIPLES */
+  .principles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 20px; }
+  .principle-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 20px 18px; border-top: 3px solid var(--accent); }
+  .principle-card.b { border-top-color: var(--blue); }
+  .principle-card.g { border-top-color: var(--green); }
+  .principle-card.r { border-top-color: var(--accent2); }
+  .principle-icon { font-size: 26px; margin-bottom: 12px; }
+  .principle-title { font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+  .principle-text { font-size: 12px; color: rgba(245,242,236,0.55); line-height: 1.55; }
+
+  /* STRUCT TABLE */
+  .struct-table { margin-top: 20px; width: 100%; border-collapse: collapse; }
+  .struct-table th { text-align: left; font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .struct-table td { padding: 12px 16px; font-size: 13px; color: rgba(245,242,236,0.75); border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+  .struct-table tr:last-child td { border-bottom: none; }
+  .td-accent { color: var(--accent); font-weight: 700; }
+
+  /* MACRO */
+  .macro-row { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .macro-item { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; padding: 14px 18px; }
+  .macro-label { font-weight: 700; font-size: 13px; min-width: 90px; }
+  .macro-amount { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--accent); min-width: 120px; }
+  .macro-note { font-size: 12px; color: var(--muted); }
+
+  /* MEALS */
+  .meals { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .meal { display: flex; gap: 16px; align-items: flex-start; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 14px 18px; }
+  .meal-time { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); min-width: 80px; flex-shrink: 0; }
+  .meal-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .meal-detail { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .meal-protein { font-size: 11px; font-weight: 700; color: var(--green); margin-top: 4px; }
+
+  /* SUPPS */
+  .supp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 10px; margin-top: 16px; }
+  .supp-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; padding: 14px 16px; }
+  .supp-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .supp-dose { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+  .supp-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* RULES BLOCK */
+  .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; margin-top: 20px; }
+  .rule-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 22px 22px 20px; }
+  .rule-card-num { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: rgba(232,200,74,0.2); line-height: 1; margin-bottom: 8px; }
+  .rule-card-title { font-weight: 800; font-size: 14px; margin-bottom: 10px; color: var(--white); }
+  .rule-card p { font-size: 13px; color: rgba(245,242,236,0.55); line-height: 1.6; }
+
+  /* FOOTER */
+  .footer { background: var(--card-bg); border-top: 1px solid var(--border); padding: 60px 40px; text-align: center; }
+  .footer-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--accent); margin-bottom: 16px; }
+  .footer-sub { color: var(--muted); font-size: 15px; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+  .footer-handle { margin-top: 32px; font-size: 12px; color: rgba(90,87,80,0.5); letter-spacing: 0.1em; }
+
+  .mt16 { margin-top: 16px; }
+  .mt24 { margin-top: 24px; }
+  p + p { margin-top: 10px; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 50px 22px 70px; }
+    section { padding: 60px 20px; }
+    .compare { grid-template-columns: 1fr; }
+    .progress-levels { grid-template-columns: 1fr; }
+    .step-header { padding: 18px 18px; gap: 14px; }
+    .step-body { padding: 0 18px 22px; }
+    .step-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     ТИТУЛЬНЫЙ ЛИСТ
+══════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-label">Система онлайн-ведения</div>
+  <h1>ПОШАГОВАЯ<br>СИСТЕМА<br>ДОСТИЖЕНИЯ<br><span>ЦЕЛИ</span></h1>
+  <p class="hero-sub">Понятные правила. Реальный результат.<br>Всё, что нужно знать с первого дня: как мы работаем, что и когда делать, как отчитываться и как двигаться к цели без хаоса.</p>
+  <div class="hero-pills">
+    <div class="hero-pill">Контроль техники</div>
+    <div class="hero-pill">Индивидуальный план</div>
+    <div class="hero-pill">Еженедельные корректировки</div>
+    <div class="hero-pill">Поддержка без давления</div>
+  </div>
+  <div class="scroll-hint">листай ниже</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ЧТО ТЫ ПОЛУЧАЕШЬ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Прежде всего</div>
+  <h2>ЧТО ТЫ<br>ПОЛУЧАЕШЬ</h2>
+  <p class="body-text">Ты не покупаешь «программу тренировок». Ты получаешь систему сопровождения.</p>
+
+  <div class="info-grid mt16">
+    <div class="info-cell">
+      <div class="info-cell-label">📋 План</div>
+      <div class="info-cell-value">Помогаю выстроить понятный план — под твою жизнь, цели и возможности.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">🎥 Техника</div>
+      <div class="info-cell-value">Контролирую технику через видео, даю конкретные правки — не «плохо», а что именно исправить.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">📈 Прогресс</div>
+      <div class="info-cell-value">Слежу за динамикой и вовремя вношу корректировки — нагрузки, питание, активность.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">🤝 Поддержка</div>
+      <div class="info-cell-value">Помогаю не выпадать из процесса. Моя задача — встроить тренировки в твою реальную жизнь, а не заставить жить «идеально».</div>
+    </div>
+  </div>
+
+  <div class="highlight mt24">
+    <strong>Как строится работа:</strong> по недельному циклу. Каждую неделю ты тренируешься по плану, выполняешь задачи по активности, отправляешь короткие отчёты, сдаёшь недельный отчёт и получаешь корректировки. Это позволяет видеть прогресс, не терять мотивацию и вовремя исправлять ошибки.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ТРЕНИРОВКИ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 2</div>
+  <h2>РЕКОМЕНДАЦИИ<br>ПО ТРЕНИРОВКАМ</h2>
+
+  <div class="steps-wrapper">
+
+    <div class="step-card" id="tr1">
+      <div class="step-header" onclick="toggle('tr1')">
+        <div class="step-num">01</div>
+        <div class="step-title">Главный принцип — как работает прогресс</div>
+        <div class="step-badge blue">ОСНОВА</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Большинство новичков думают: чем больше выложился — тем лучше результат. Это не так.</p>
+        <div class="principles-grid">
+          <div class="principle-card">
+            <div class="principle-icon">🏋️</div>
+            <div class="principle-title">Тренировка</div>
+            <div class="principle-text">Создаёт нагрузку и стресс для мышц — это сигнал телу: «нужно стать сильнее».</div>
+          </div>
+          <div class="principle-card b">
+            <div class="principle-icon">😴</div>
+            <div class="principle-title">Восстановление</div>
+            <div class="principle-text">Тело адаптируется и растёт во сне и в дни отдыха. Нет восстановления — нет прогресса.</div>
+          </div>
+          <div class="principle-card g">
+            <div class="principle-icon">📈</div>
+            <div class="principle-title">Прогресс</div>
+            <div class="principle-text">Виден через недели и месяцы — не ожидай изменений за 1–2 тренировки.</div>
+          </div>
+        </div>
+        <div class="highlight">
+          <strong>Запомни:</strong> ты становишься сильнее не на тренировке, а между тренировками. Твоя задача — дать достаточный стимул и дать телу восстановиться.
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="tr2">
+      <div class="step-header" onclick="toggle('tr2')">
+        <div class="step-num">02</div>
+        <div class="step-title">Правильная нагрузка — сколько выкладываться</div>
+        <div class="step-badge">НАГРУЗКА</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <div class="compare">
+          <div class="compare-col bad">
+            <div class="compare-col-title">❌ Не нужно</div>
+            <p>Тренироваться до полного отказа мышц</p>
+            <p>Уходить с тренировки «убитым»</p>
+            <p>Делать максимум повторений через боль</p>
+          </div>
+          <div class="compare-col good">
+            <div class="compare-col-title">✅ Нужно</div>
+            <p>Чувствовать реальное усилие</p>
+            <p>Преодолевать сопротивление</p>
+            <p>Не «экономить» и не халтурить</p>
+          </div>
+        </div>
+        <div class="highlight mt16">
+          <strong>Идеальный ориентир — последнее повторение.</strong> Медленное, тяжёлое, но с правильной техникой — нагрузка оптимальная. Лёгкое — добавь вес. Техника ломается — снизь вес.
+        </div>
+        <p class="body-text mt16">Ощущения во время работы — примерно <strong style="color:var(--accent);">7 из 10</strong> по тяжести. Техника важнее веса.</p>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="tr3">
+      <div class="step-header" onclick="toggle('tr3')">
+        <div class="step-num">03</div>
+        <div class="step-title">Структура каждой тренировки</div>
+        <div class="step-badge green">СТРУКТУРА</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <table class="struct-table">
+          <thead><tr><th>Часть</th><th>Время</th><th>Что делать</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="td-accent">Общая разминка</td>
+              <td>5–10 мин</td>
+              <td>Лёгкое кардио, движение всего тела. Цель — разогреться и слегка вспотеть. Подготавливает суставы, сердце и нервную систему.</td>
+            </tr>
+            <tr>
+              <td class="td-accent">Специальная разминка</td>
+              <td>Перед каждым упражнением</td>
+              <td>Выходи к рабочему весу постепенно через разминочные подходы. Пример: рабочий вес 60 кг → сначала гриф × 15, потом 30 кг × 8, 45 кг × 6 — затем рабочий подход.</td>
+            </tr>
+            <tr>
+              <td class="td-accent">Заминка</td>
+              <td>10–15 мин</td>
+              <td>Лёгкое кардио (пульс 100–120), растяжка. Ускоряет восстановление и снижает болезненность мышц.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="tr4">
+      <div class="step-header" onclick="toggle('tr4')">
+        <div class="step-num">04</div>
+        <div class="step-title">Техника выполнения упражнений</div>
+        <div class="step-badge red">ВАЖНО</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Техника определяет результат. Неважно, сколько ты поднял — важно, как ты это сделал.</p>
+        <div class="info-grid">
+          <div class="info-cell">
+            <div class="info-cell-label">⬇️ Негативная фаза</div>
+            <div class="info-cell-value">Опускай вес медленно — 3–4 секунды. Это самая эффективная часть повторения для роста мышц.</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">⬆️ Активная фаза</div>
+            <div class="info-cell-value">Поднимай быстрее, но под контролем. Не бросай вес и не используй инерцию.</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">📐 Амплитуда</div>
+            <div class="info-cell-value">Всегда полная амплитуда движения. Никаких сокращённых повторений ради большего веса.</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">🧠 Концентрация</div>
+            <div class="info-cell-value">Фокус на целевой мышце — чувствуй именно ту мышцу, которую тренируешь.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="tr5">
+      <div class="step-header" onclick="toggle('tr5')">
+        <div class="step-num">05</div>
+        <div class="step-title">Отдых между подходами</div>
+        <div class="step-badge">ОТДЫХ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <div class="info-grid" style="margin-top:0">
+          <div class="info-cell">
+            <div class="info-cell-label">🦵 Ноги и базовые</div>
+            <div class="info-cell-value"><strong style="color:var(--accent)">2–3 минуты.</strong> Приседания, становая тяга, жим, тяги — здесь нужно полное восстановление.</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">💪 Изоляция и плечи</div>
+            <div class="info-cell-value"><strong style="color:var(--accent)">1,5–2 минуты.</strong> Сгибания, разгибания, пресс — меньше нагрузки, меньше отдых.</div>
+          </div>
+        </div>
+        <div class="highlight mt16">
+          <strong>Главное правило:</strong> отдыхай столько, чтобы следующий подход можно было выполнить с нужным качеством. Отдых — не лень, а часть тренировки.
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="tr6">
+      <div class="step-header" onclick="toggle('tr6')">
+        <div class="step-num">06</div>
+        <div class="step-title">Добавки — что реально работает</div>
+        <div class="step-badge">БОНУС</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Добавки — небольшой дополнительный процент к результату. Сначала питание и тренировки — потом добавки.</p>
+        <div class="supp-grid">
+          <div class="supp-item"><div class="supp-name">Креатин</div><div class="supp-dose">5 г ежедневно</div><div class="supp-desc">Повышает работоспособность и объём работы. Самая изученная добавка.</div></div>
+          <div class="supp-item"><div class="supp-name">Бета-аланин</div><div class="supp-dose">3–5 г</div><div class="supp-desc">Повышает выносливость, улучшает переносимость нагрузки.</div></div>
+          <div class="supp-item"><div class="supp-name">Витамин C</div><div class="supp-dose">500 мг (дни тренировок)</div><div class="supp-desc">Поддерживает иммунитет в периоды нагрузок.</div></div>
+          <div class="supp-item"><div class="supp-name">Омега-3</div><div class="supp-dose">1,5–2 г EPA/DHA</div><div class="supp-desc">Поддерживает восстановление и общее здоровье.</div></div>
+          <div class="supp-item"><div class="supp-name">Витамин D3</div><div class="supp-dose">2000–5000 IU</div><div class="supp-desc">Желательно сдать анализ. При дефиците — критически важен.</div></div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     КОНТРОЛЬ ТЕХНИКИ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 3</div>
+  <h2>КОНТРОЛЬ<br>ТЕХНИКИ</h2>
+  <p class="body-text">Я не могу стоять рядом с тобой в зале — видео это мои глаза. Плохая техника = риск травмы + упражнение не работает на нужную мышцу.</p>
+
+  <div class="steps-wrapper mt24">
+    <div class="step-card open" id="vid1">
+      <div class="step-header" onclick="toggle('vid1')">
+        <div class="step-num">→</div>
+        <div class="step-title">Что и как снимать</div>
+        <div class="step-badge blue">ИНСТРУКЦИЯ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Ты снимаешь первый и последний рабочие подходы в обозначенных упражнениях, а также упражнения, которые вызывают вопросы или дискомфорт.</p>
+        <ul class="rule-list">
+          <li data-icon="📱">Камера на уровне пояса/груди — устойчиво (штатив, полка, стопка книг). Не в руке.</li>
+          <li data-icon="👁️">В кадре видно всё тело: голова, руки, ноги, стопы. Обрезанное по пояс видео — бесполезно.</li>
+          <li data-icon="🔄">Для приседов, тяг, выпадов — снимай сбоку или под углом 45°. Для жимов — сбоку или немного спереди.</li>
+          <li data-icon="💡">Хорошее освещение. Тёмное видео не позволит дать нормальную обратную связь.</li>
+          <li data-icon="🎬">Снимай 1–2 рабочих подхода. Не всю тренировку — только ключевые и непонятные упражнения.</li>
+        </ul>
+        <div class="compare mt16">
+          <div class="compare-col bad">
+            <div class="compare-col-title">❌ Как не надо</div>
+            <p>«Техника плохая, переделай»</p>
+            <p>«Спина кривая»</p>
+            <p>20 замечаний за раз</p>
+          </div>
+          <div class="compare-col good">
+            <div class="compare-col-title">✅ Как я даю правки</div>
+            <p>1–3 главные правки, простое объяснение</p>
+            <p>«В приседе колени немного уходят внутрь — следи, чтобы они двигались по линии носков»</p>
+          </div>
+        </div>
+        <div class="highlight mt16">
+          <strong>Задача после правки:</strong> одно конкретное действие на следующую тренировку — не список из десяти пунктов.
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ПИТАНИЕ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 4</div>
+  <h2>РЕКОМЕНДАЦИИ<br>ПО ПИТАНИЮ</h2>
+
+  <div class="steps-wrapper">
+
+    <div class="step-card" id="nut1">
+      <div class="step-header" onclick="toggle('nut1')">
+        <div class="step-num">01</div>
+        <div class="step-title">Главная идея — система, а не диета</div>
+        <div class="step-badge blue">ОСНОВА</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Большинство людей ищут идеальный план питания. Проблема в том, что идеальный план — тот, которого ты можешь придерживаться долго, а не тот, который даёт результат за 2 недели.</p>
+        <div class="compare mt16">
+          <div class="compare-col bad">
+            <div class="compare-col-title">❌ Как не надо</div>
+            <p>Резко менять всё питание сразу</p>
+            <p>Искать «запрещённые» продукты</p>
+            <p>Считать каждую калорию с первого дня</p>
+            <p>Садиться на жёсткую диету</p>
+          </div>
+          <div class="compare-col good">
+            <div class="compare-col-title">✅ Как надо</div>
+            <p>Добавлять одно изменение в неделю</p>
+            <p>Есть 3–4 раза в день по режиму</p>
+            <p>Строить рацион вокруг белка</p>
+            <p>Сохранять результат, а не гнаться за скоростью</p>
+          </div>
+        </div>
+        <div class="highlight mt16"><strong>Запрещённых продуктов нет.</strong> Есть можно всё — если рацион в целом соответствует твоей цели. Разрушает результат — хаотичное питание без системы, день за днём.</div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut2">
+      <div class="step-header" onclick="toggle('nut2')">
+        <div class="step-num">02</div>
+        <div class="step-title">Старт — первые две недели</div>
+        <div class="step-badge green">СТАРТ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <ul class="rule-list">
+          <li data-icon="1️⃣">Зафиксируй точку А: взвесься утром натощак, сделай фото (фронт, сбоку, сзади), запиши замеры. Без этого невозможно оценить прогресс.</li>
+          <li data-icon="📸">7 дней — фотографируй всё, что ешь и пьёшь, без попыток питаться «правильно». Цель — честно увидеть текущий рацион.</li>
+          <li data-icon="➕">Каждую неделю внедряй одну новую привычку. Организм адаптируется к постепенным изменениям лучше, чем к резким ограничениям.</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut3">
+      <div class="step-header" onclick="toggle('nut3')">
+        <div class="step-num">03</div>
+        <div class="step-title">Белок — главный приоритет</div>
+        <div class="step-badge red">КЛЮЧЕВОЕ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Если в питании есть только один параметр, за которым ты следишь — пусть это будет белок. Он отвечает за рост мышц, восстановление и насыщение.</p>
+        <div class="highlight mt16">
+          <strong>Формула: 1,6–2,2 г × кг веса тела в день</strong> — в том числе в дни без тренировок.<br><br>
+          60 кг → 96–132 г белка &nbsp;·&nbsp; 75 кг → 120–165 г &nbsp;·&nbsp; 90 кг → 144–198 г
+        </div>
+        <div class="info-grid mt16">
+          <div class="info-cell"><div class="info-cell-label">🥩 Мясо и птица</div><div class="info-cell-value">Куриная грудка, индейка, говядина — 25–30 г белка на 100 г.</div></div>
+          <div class="info-cell"><div class="info-cell-label">🐟 Рыба</div><div class="info-cell-value">Тунец, лосось, минтай, кальмары, креветки — 18–25 г на 100 г.</div></div>
+          <div class="info-cell"><div class="info-cell-label">🥚 Яйца</div><div class="info-cell-value">Одно яйцо — около 6 г белка. Желток и белок — оба важны.</div></div>
+          <div class="info-cell"><div class="info-cell-label">🥛 Молочные</div><div class="info-cell-value">Творог 0–5%, греческий йогурт. Творог — лучший выбор: 14–18 г на 100 г.</div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut4">
+      <div class="step-header" onclick="toggle('nut4')">
+        <div class="step-num">04</div>
+        <div class="step-title">Углеводы и жиры — как к ним относиться</div>
+        <div class="step-badge">МАКРОСЫ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Углеводы и жиры — не враги. Они дают энергию и поддерживают здоровье. После того как белок в порядке — остальное проще.</p>
+        <div class="macro-row">
+          <div class="macro-item"><div class="macro-label">Белок</div><div class="macro-amount">1,6–2,2 г/кг</div><div class="macro-note">Главный приоритет — мышцы и восстановление.</div></div>
+          <div class="macro-item"><div class="macro-label">Углеводы</div><div class="macro-amount">3–5 г/кг</div><div class="macro-note">Основной источник энергии для тренировок.</div></div>
+          <div class="macro-item"><div class="macro-label">Жиры</div><div class="macro-amount">0,8–1,2 г/кг</div><div class="macro-note">Гормоны и здоровье. Не убирать полностью.</div></div>
+        </div>
+        <div class="highlight mt16"><strong>Практическое правило:</strong> белок в каждом приёме пищи. Остальное — по ситуации. Это простое правило автоматически улучшает большинство рационов.</div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut5">
+      <div class="step-header" onclick="toggle('nut5')">
+        <div class="step-num">05</div>
+        <div class="step-title">Пример рациона на день</div>
+        <div class="step-badge green">ПРИМЕР</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Ориентир, а не строгий план. Замени продукты на те, которые тебе нравятся — сохрани структуру: белок + углеводы или овощи в каждом приёме.</p>
+        <div class="meals mt16">
+          <div class="meal"><div class="meal-time">ЗАВТРАК</div><div><div class="meal-name">Яичница + овсянка + фрукт</div><div class="meal-detail">3 яйца, 60 г овсянки на воде или молоке, банан или горсть ягод</div><div class="meal-protein">~30–35 г белка</div></div></div>
+          <div class="meal"><div class="meal-time">ОБЕД</div><div><div class="meal-name">Куриная грудка + гречка + овощи</div><div class="meal-detail">150–200 г куриной грудки, 80 г гречки (сухой), огурец/помидор</div><div class="meal-protein">~45–50 г белка</div></div></div>
+          <div class="meal"><div class="meal-time">ПЕРЕКУС</div><div><div class="meal-name">Творог + ягоды</div><div class="meal-detail">200 г творога 2–5%, горсть ягод или немного мёда</div><div class="meal-protein">~28–34 г белка</div></div></div>
+          <div class="meal"><div class="meal-time">УЖИН</div><div><div class="meal-name">Рыба + рис + салат</div><div class="meal-detail">150–200 г лосося или минтая, 70 г риса (сухой), свежий салат с маслом</div><div class="meal-protein">~35–40 г белка</div></div></div>
+        </div>
+        <div class="highlight mt16"><strong>Итого за день:</strong> ~140–160 г белка — хороший диапазон для большинства людей весом 70–85 кг.</div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut6">
+      <div class="step-header" onclick="toggle('nut6')">
+        <div class="step-num">06</div>
+        <div class="step-title">Три уровня контроля питания</div>
+        <div class="step-badge">УРОВНИ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Начинаем с уровня, который ты реально выдержишь. Питание должно быть не идеальным — а выполнимым.</p>
+        <div class="progress-levels">
+          <div class="level-card l1">
+            <div class="level-num">1</div>
+            <div class="level-title">Простые правила</div>
+            <div class="level-desc">Для новичков. Белок в каждый приём. Овощи каждый день. Контроль сладкого. Вода 1,5–2 л. 3–4 приёма по режиму.</div>
+          </div>
+          <div class="level-card l2">
+            <div class="level-num">2</div>
+            <div class="level-title">Дневник питания</div>
+            <div class="level-desc">Когда освоил уровень 1. Фиксируй рацион 3–7 дней. Ищем ошибки: перекусы, вечерние переедания, мало белка.</div>
+          </div>
+          <div class="level-card l3">
+            <div class="level-num">3</div>
+            <div class="level-title">КБЖУ</div>
+            <div class="level-desc">Для точного контроля. Калории, белки, жиры, углеводы. Корректируем по динамике веса и самочувствию.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut7">
+      <div class="step-header" onclick="toggle('nut7')">
+        <div class="step-num">07</div>
+        <div class="step-title">Плато — вес стоит больше двух недель</div>
+        <div class="step-badge">КОРРЕКЦИЯ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <p class="body-text">Плато — нормальная часть процесса. Тело адаптируется. Вот что делаем.</p>
+        <div class="info-grid mt16">
+          <div class="info-cell"><div class="info-cell-label">🎯 Цель — похудение</div><div class="info-cell-value">Сокращаем рацион на 100–200 ккал — чаще всего за счёт углеводов.</div></div>
+          <div class="info-cell"><div class="info-cell-label">🎯 Цель — набор массы</div><div class="info-cell-value">Добавляем в рацион 100–200 ккал — чаще всего за счёт углеводов.</div></div>
+        </div>
+        <div class="highlight mt16"><strong>На весах — не только жир.</strong> На цифру влияют вода, сон, стресс, соль, углеводы. Смотрим на динамику за 2–4 недели, а не за один день.</div>
+      </div></div>
+    </div>
+
+    <div class="step-card" id="nut8">
+      <div class="step-header" onclick="toggle('nut8')">
+        <div class="step-num">08</div>
+        <div class="step-title">Список привычек — по одной в неделю</div>
+        <div class="step-badge green">ПРИВЫЧКИ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <div class="compare">
+          <div class="compare-col yellow">
+            <div class="compare-col-title">🍽️ Питание</div>
+            <p>Белок в каждом приёме пищи</p>
+            <p>3–4 приёма пищи в день по режиму</p>
+            <p>Овощи или зелень хотя бы в 2 приёмах</p>
+            <p>Убрать сладкие напитки</p>
+            <p>Не есть хаотично</p>
+            <p>Белковый перекус вместо сладкого</p>
+          </div>
+          <div class="compare-col neutral">
+            <div class="compare-col-title">🌅 Образ жизни</div>
+            <p>Стакан воды утром сразу после подъёма</p>
+            <p>2–2,5 л воды в день как норма</p>
+            <p>Ложиться спать в одно время</p>
+            <p>7500+ шагов каждый день</p>
+            <p>Не пропускать завтрак</p>
+            <p>Готовить еду на 2–3 дня заранее</p>
+          </div>
+        </div>
+        <div class="highlight mt16"><strong>Главная мысль:</strong> простая система, которой ты придерживаешься месяцами, всегда работает лучше идеального плана, которого хватает на две недели.</div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     АКТИВНОСТЬ ВНЕ ЗАЛА
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 5</div>
+  <h2>АКТИВНОСТЬ<br>ВНЕ ЗАЛА</h2>
+  <p class="body-text">3 тренировки — это 3 часа из 168 часов в неделю. То, что ты делаешь остальные 165 часов, решает очень много.</p>
+
+  <div class="info-grid">
+    <div class="info-cell">
+      <div class="info-cell-label">👟 Шаги</div>
+      <div class="info-cell-value">7500–10 000 шагов в день. Прогулки, лестница, пешие маршруты — считается всё. Основной расход калорий вне тренировок.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">😴 Сон</div>
+      <div class="info-cell-value">6–9 часов каждую ночь. Без сна тело не восстанавливается и не растёт — даже при идеальных тренировках и питании.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">😰 Стресс</div>
+      <div class="info-cell-value">Хронический стресс повышает кортизол — задержка воды, тяга к сладкому, замедленное восстановление. Буду спрашивать в отчёте.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">⚡ Усталость</div>
+      <div class="info-cell-value">Если после тренировки разбит несколько дней — нагрузка слишком высокая. Сразу пиши — скорректируем план.</div>
+    </div>
+  </div>
+
+  <div class="highlight mt24">
+    <strong>Что происходит без нормального сна:</strong> снижается синтез мышечного белка, хуже восстанавливается нервная система, растёт кортизол, падает концентрация и мотивация. Сон — это часть тренировки.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ОТЧЁТЫ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 6</div>
+  <h2>ОТЧЁТЫ —<br>КАК И КОГДА</h2>
+  <p class="body-text">Отчёты нужны не для бюрократии. Без них я работаю вслепую и не могу вовремя скорректировать план. Их два вида.</p>
+
+  <div class="steps-wrapper mt24">
+
+    <div class="step-card open" id="rep1">
+      <div class="step-header" onclick="toggle('rep1')">
+        <div class="step-num">→</div>
+        <div class="step-title">Короткий отчёт — ежедневно или после тренировки (2 минуты)</div>
+        <div class="step-badge blue">ПОСЛЕ ТР-КИ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <div class="report-block" style="margin-top:0">
+          <div class="report-item"><div class="report-icon">🏋️</div><div><div class="report-label">Тренировка</div><div class="report-val">Сделал / не сделал</div></div></div>
+          <div class="report-item"><div class="report-icon">🍽️</div><div><div class="report-label">Питание</div><div class="report-val">По плану / были отклонения</div></div></div>
+          <div class="report-item"><div class="report-icon">👟</div><div><div class="report-label">Шаги</div><div class="report-val">Количество за день</div></div></div>
+          <div class="report-item"><div class="report-icon">😴</div><div><div class="report-label">Сон</div><div class="report-val">Сколько часов</div></div></div>
+          <div class="report-item"><div class="report-icon">💬</div><div><div class="report-label">Самочувствие</div><div class="report-val">Энергия / голод / усталость / стресс</div></div></div>
+          <div class="report-item"><div class="report-icon">❓</div><div><div class="report-label">Вопросы</div><div class="report-val">Если есть — кратко</div></div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="step-card open" id="rep2">
+      <div class="step-header" onclick="toggle('rep2')">
+        <div class="step-num">→</div>
+        <div class="step-title">Большой недельный отчёт — воскресенье до 21:00</div>
+        <div class="step-badge red">1× В НЕДЕЛЮ</div>
+        <div class="step-arrow">↓</div>
+      </div>
+      <div class="step-body"><div class="step-body-inner">
+        <div class="report-block" style="margin-top:0">
+          <div class="report-item"><div class="report-icon">⚖️</div><div><div class="report-label">Вес</div><div class="report-val">Средний за неделю (измеряй утром натощак)</div></div></div>
+          <div class="report-item"><div class="report-icon">📸</div><div><div class="report-label">Фото</div><div class="report-val">Раз в 2 недели, те же условия</div></div></div>
+          <div class="report-item"><div class="report-icon">📏</div><div><div class="report-label">Замеры</div><div class="report-val">Бёдра, ягодицы, талия, обхват рук — раз в 2 нед.</div></div></div>
+          <div class="report-item"><div class="report-icon">✅</div><div><div class="report-label">Тренировки</div><div class="report-val">Сколько из запланированных выполнено</div></div></div>
+          <div class="report-item"><div class="report-icon">🥗</div><div><div class="report-label">Питание</div><div class="report-val">Соблюдение плана — сколько дней</div></div></div>
+          <div class="report-item"><div class="report-icon">💬</div><div><div class="report-label">Самочувствие</div><div class="report-val">Энергия, сон, голод, стресс</div></div></div>
+          <div class="report-item"><div class="report-icon">🌟</div><div><div class="report-label">Что получилось</div><div class="report-val">Что вышло хорошо на этой неделе</div></div></div>
+          <div class="report-item"><div class="report-icon">⛔</div><div><div class="report-label">Что мешало</div><div class="report-val">Честно: работа, стресс, лень, болезнь</div></div></div>
+          <div class="report-item"><div class="report-icon">❓</div><div><div class="report-label">Вопросы</div><div class="report-val">Всё, что накопилось за неделю</div></div></div>
+        </div>
+        <div class="highlight mt16">
+          <strong>Что я делаю после отчёта:</strong> анализирую есть ли прогресс, соблюдается ли план, хватает ли восстановления. После анализа ты получаешь корректировки тренировок и питания, новые задачи на неделю, обратную связь по технике и объяснение происходящего.
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ПРАВИЛА СВЯЗИ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 7</div>
+  <h2>ПРАВИЛА<br>СВЯЗИ</h2>
+  <p class="body-text">Я на связи в рабочие дни с 10:00 до 19:00. Обычно отвечаю в течение дня. Хороший тренер — это не круглосуточная поддержка в чате, а система, которая работает и без постоянного контакта.</p>
+
+  <div class="compare mt24">
+    <div class="compare-col bad">
+      <div class="compare-col-title">⚡ СРОЧНО — пиши сразу</div>
+      <p>Боль во время упражнения</p>
+      <p>Ухудшение самочувствия</p>
+      <p>Непонятно, можно ли продолжать тренировку</p>
+      <p>Нужно срочно заменить упражнение</p>
+    </div>
+    <div class="compare-col good">
+      <div class="compare-col-title">📬 НЕ СРОЧНО — в следующий отчёт</div>
+      <p>«Можно ли рис?»</p>
+      <p>«Вес вырос на 300 г»</p>
+      <p>«Нормально ли я поел?»</p>
+      <p>Вопросы по питанию и замены упражнений заранее</p>
+    </div>
+  </div>
+
+  <div class="highlight mt24 red">
+    <strong>Медицинские ситуации</strong> — острая боль, давление, обморок, травма, резкое ухудшение состояния — это не «срочно тренеру», это к врачу.
+  </div>
+
+  <ul class="rule-list mt24">
+    <li data-icon="📅">Большой разбор отчёта — понедельник/вторник (по воскресному отчёту). Новый план на неделю выдаётся тогда же.</li>
+    <li data-icon="🎥">Видео техники — смотрю и комментирую в течение 24 часов в рабочие дни.</li>
+    <li data-icon="🤝">Была тяжёлая неделя и сорвался — напиши честно. Лучше правда, чем красивый отчёт и нулевой прогресс. Без осуждения.</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     МОТИВАЦИЯ И ПСИХОЛОГИЯ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Шаг 8</div>
+  <h2>МОТИВАЦИЯ<br>И ПСИХОЛОГИЯ</h2>
+  <p class="body-text">Мотивация — ненадёжна. Поэтому наша задача — не надеяться на мотивацию, а выстроить систему действий.</p>
+
+  <div class="psych-grid">
+    <div class="psych-card p1">
+      <div class="psych-card-title">🧩 Маленькие победы</div>
+      <p>Фиксируем первые минус сантиметры, улучшение сна, рост сил, улучшение самочувствия, стабильность. Сделал 3 тренировки из 3 — уже победа. Я буду это замечать и говорить тебе об этом.</p>
+    </div>
+    <div class="psych-card p2">
+      <div class="psych-card-title">🎯 Реалистичные задачи</div>
+      <p>Не «похудеть на 15 кг», а сделать 3 тренировки, держать шаги, соблюдать питание 80% времени. Конкретные краткосрочные цели работают лучше далёких мотиваций.</p>
+    </div>
+    <div class="psych-card p3">
+      <div class="psych-card-title">🤝 Поддержка без давления</div>
+      <p>Я не работаю через стыд, унижение и чувство вины. Моя задача — помочь тебе продолжать движение, даже если была сложная неделя.</p>
+    </div>
+    <div class="psych-card p4">
+      <div class="psych-card-title">🔄 Фокус на процессе</div>
+      <p>Оцениваем не только результат, но и выполнение действий. Потому что именно действия дают результат. Один плохой день ничего не решает.</p>
+    </div>
+  </div>
+
+  <div class="highlight mt24">
+    <strong>Главная цель нашей работы</strong> — не просто похудеть к лету или сделать фото. Главная цель — создать систему, которую ты сможешь удерживать долго без постоянной борьбы с собой.
+  </div>
+
+  <div class="rules-grid mt24">
+    <div class="rule-card">
+      <div class="rule-card-num">1</div>
+      <div class="rule-card-title">Не пытаться делать идеально</div>
+      <p>Нужно выполнять систему достаточно хорошо, держать стабильность и не выпадать из процесса.</p>
+    </div>
+    <div class="rule-card">
+      <div class="rule-card-num">2</div>
+      <div class="rule-card-title">Не компенсировать срывы</div>
+      <p>Не нужно голодать после переедания или убивать себя кардио. Возвращаемся к плану спокойно.</p>
+    </div>
+    <div class="rule-card">
+      <div class="rule-card-num">3</div>
+      <div class="rule-card-title">Не оценивать себя по одному дню</div>
+      <p>Один плохой день ничего не решает. Результат делает система, повторение и месяцы стабильности.</p>
+    </div>
+  </div>
+
+  <ul class="rule-list mt24">
+    <li data-icon="🪞">Сравниваем тебя только с собой 2 недели назад — не с другими и не с «идеальным телом» из соцсетей.</li>
+    <li data-icon="📈">Прогресс нелинейный — будут недели, когда кажется, что ничего не меняется. Потом резкий скачок. Это норма.</li>
+    <li data-icon="🏆">Каждые 4 недели — полный итог: замеры, фото, сравнение с точкой А. Это самый мощный мотивирующий момент.</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     ТИПИЧНАЯ НЕДЕЛЯ
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Как выглядит твоя неделя</div>
+  <h2>ТИПИЧНАЯ<br>НЕДЕЛЯ</h2>
+
+  <div class="week-cycle">
+    <div class="week-day">
+      <div class="week-day-name">ПН</div>
+      <div class="week-day-task">Получаю тренировочный план. Тренировка 1. Отчёт по тренировке.</div>
+    </div>
+    <div class="week-day rest">
+      <div class="week-day-name">ВТ</div>
+      <div class="week-day-task">День отдыха. Лёгкое кардио.</div>
+    </div>
+    <div class="week-day">
+      <div class="week-day-name">СР</div>
+      <div class="week-day-task">Тренировка 2. Отчёт по тренировке.</div>
+    </div>
+    <div class="week-day rest">
+      <div class="week-day-name">ЧТ</div>
+      <div class="week-day-task">День отдыха. Лёгкое кардио.</div>
+    </div>
+    <div class="week-day">
+      <div class="week-day-name">ПТ</div>
+      <div class="week-day-task">Тренировка 3. Отчёт по тренировке.</div>
+    </div>
+    <div class="week-day rest">
+      <div class="week-day-name">СБ</div>
+      <div class="week-day-task">Отдых.</div>
+    </div>
+    <div class="week-day rest">
+      <div class="week-day-name">ВС</div>
+      <div class="week-day-task">Отдых. Большой недельный отчёт.</div>
+    </div>
+  </div>
+
+  <div class="highlight mt24">
+    В <strong>понедельник</strong> после отчёта за предыдущую неделю я вношу корректировки в план и выдаю новый недельный план. Так работа идёт циклично — без хаоса.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     КАК МЫ ОТСЛЕЖИВАЕМ ПРОГРЕСС
+══════════════════════════════════════════ -->
+<section>
+  <div class="section-tag">Как видеть результат</div>
+  <h2>КАК МЫ<br>ОТСЛЕЖИВАЕМ<br>ПРОГРЕСС</h2>
+  <p class="body-text">Мы смотрим не только на вес. Вес может стоять, прыгать, временно расти — это нормально. Главное — тенденция за недели, а не эмоции от одного дня.</p>
+
+  <div class="info-grid mt16">
+    <div class="info-cell">
+      <div class="info-cell-label">⚖️ Вес (средний)</div>
+      <div class="info-cell-value">Взвешивайся каждое утро при одинаковых условиях. Смотрим средний за неделю — не ежедневные прыжки.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">📏 Замеры</div>
+      <div class="info-cell-value">Талия, бёдра, руки, грудь — раз в 2 недели. Часто объём падает, когда вес стоит. Это прогресс.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">📸 Фото</div>
+      <div class="info-cell-value">Самый честный метод. Раз в 2 недели при одинаковых условиях. Разница видна там, где цифры молчат.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">💪 Силовые показатели</div>
+      <div class="info-cell-value">Рост рабочих весов — это прогресс. Стал приседать 60 кг вместо 40 кг — это результат.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">⚡ Самочувствие</div>
+      <div class="info-cell-value">Энергия, уровень голода, качество сна, настроение. Это тоже результат, который нельзя игнорировать.</div>
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">🔄 Тренд за месяц</div>
+      <div class="info-cell-value">Раз в 4 недели подводим полный итог: все показатели вместе. Это главная точка оценки прогресса.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<div class="footer">
+  <div class="footer-title">ГОТОВ НАЧАТЬ?</div>
+  <div class="footer-handle">@axyonov_fit</div>
+</div>
+
+<script>
+  function toggle(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  // Open first card in training and nutrition sections by default
+  ['tr1', 'nut1'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+  });
+
+  // Animate on scroll
+  const items = document.querySelectorAll(
+    '.step-card, .week-day, .psych-card, .info-cell, .level-card, ' +
+    '.anketa-item, .meal, .supp-item, .macro-item, .principle-card, .rule-card'
+  );
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.05 });
+
+  items.forEach((c, i) => {
+    c.style.opacity = '0';
+    c.style.transform = 'translateY(16px)';
+    c.style.transition = `opacity 0.45s ease ${(i % 20) * 0.04}s, transform 0.45s ease ${(i % 20) * 0.04}s`;
+    obs.observe(c);
+  });
+</script>
+</body>
+</html>
